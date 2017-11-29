@@ -11,18 +11,10 @@ class TestAnazyler(unittest.TestCase):
 			os.makedirs('test-dir/reportdir')
 		except:
 			pass
-		with open('test-dir/logdir/not-log-file.txt', 'w') as f:
-			f.write('')
-		with open('test-dir/logdir/nginx-access-ui.log-20170502', 'w') as f:
-			f.write('')
-		with open('test-dir/logdir/nginx-access-ui.log-20170625', 'w') as f:
-			f.write('')
-		with open('test-dir/logdir/nginx-access-ui.log-20170301.gz', 'w') as f:
-			f.write('')
-		with open('test-dir/logdir/nginx-access-ui.log-20170510.gz', 'w') as f:
-			f.write('')
-		with open('test-dir/reportdir/report-2010.07.07.html', 'w') as f:
-			f.write('')
+		test_files = ['test-dir/logdir/not-log-file.txt', 'test-dir/logdir/nginx-access-ui.log-20170502', 'test-dir/logdir/nginx-access-ui.log-20170625', 'test-dir/logdir/nginx-access-ui.log-20170301.gz', 'test-dir/logdir/nginx-access-ui.log-20170510.gz', 'test-dir/reportdir/report-2010.07.07.html']
+		for test_file in test_files:
+			with open(test_file, 'w') as f:
+				f.write('')
 
 	def testIsLogFile(self):
 		self.assertFalse(log_analyzer.is_log_file('file-doesnt-exist.txt', 'test-dir/logdir/file-doesnt-exist.txt'))
