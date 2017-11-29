@@ -70,18 +70,19 @@ def median(sorted_values):
         return (sorted_values[arr_len // 2 - 1] + sorted_values[arr_len // 2]) / 2.0
     return sorted_values[arr_len // 2]
 
-def calc_stats(times, queries_count, total_time):
-    sorted_times = sorted(times)
-    stats = {}
-    stats['count'] = len(sorted_times)
-    stats['count_perc'] = stats['count'] * 100.0 / queries_count
-    stats['time_sum'] = sum(sorted_times)
-    stats['time_perc'] = stats['time_sum'] * 100.0 / total_time
-    stats['time_avg'] = stats['time_sum'] / stats['count']
-    stats['time_max'] = sorted_times[len(sorted_times) - 1]
-    stats['time_med'] = median(sorted_times)
-    
-    return stats
+def calc_stats(url, times, queries_count, total_time):
+	sorted_times = sorted(times)
+	stats = {}
+	stats['url'] = url
+	stats['count'] = len(sorted_times)
+	stats['count_perc'] = stats['count'] * 100.0 / queries_count
+	stats['time_sum'] = sum(sorted_times)
+	stats['time_perc'] = stats['time_sum'] * 100.0 / total_time
+	stats['time_avg'] = stats['time_sum'] / stats['count']
+	stats['time_max'] = sorted_times[len(sorted_times) - 1]
+	stats['time_med'] = median(sorted_times)
+	
+	return stats
 
 def calc_table(lines_generator, report_size):
 	url_times = {}
@@ -100,31 +101,15 @@ def calc_table(lines_generator, report_size):
 	
 	logging.info('Line processing is done')
 	
-	stat = {}
+	table = []
 	for url, times in url_times.items():
-		stat[url] = calc_stats(times, queries_count, total_time)
+		table.append(calc_stats(url, times, queries_count, total_time))
 		
-	sorted_stat = sorted(stat.items(), key = lambda rec : rec[1]['time_sum'], reverse = True)
+	sorted_table = sorted(table, key = lambda rec : rec['time_sum'], reverse = True)
 	
-	if (len(sorted_stat) <= report_size):
-		return sorted_stat
-	return sorted_stat[:report_size]
-		
-def json_repr_one_rec(stat_rec):
-    json = {}
-    json['url'] = stat_rec[0]
-    json['count'] = stat_rec[1]['count']
-    json['count_perc'] = stat_rec[1]['count_perc']
-    json['time_sum'] = stat_rec[1]['time_sum']
-    json['time_perc'] = stat_rec[1]['time_perc']
-    json['time_avg'] = stat_rec[1]['time_avg']
-    json['time_max'] = stat_rec[1]['time_max']
-    json['time_med'] = stat_rec[1]['time_med']
-    
-    return json
-	
-def json_repr(stat_dict):
-    return [json_repr_one_rec(rec) for rec in stat_dict]
+	if (len(sorted_table) <= report_size):
+		return sorted_table
+	return sorted_table[:report_size]
 
 def render_template(template, table):
 	if (template is None):
@@ -227,7 +212,7 @@ def main():
 		logging.info('Report have been already created')
 		return
 	table = calc_table(get_log_records(latest_log_info.path), config['REPORT_SIZE'])
-	rep = render_template(get_template(), json_repr(table))
+	rep = render_template(get_template(), table)
 	write_report(config['REPORT_DIR'], rep, latest_log_info.date)
 	write_ts(config['REPORT_DIR'], latest_log_info.date)
 
