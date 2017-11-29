@@ -29,7 +29,7 @@ def is_log_file(rel_path, abs_path):
 
 def get_latest_log(logdir):
 	logfiles = [(path, join(logdir, path)) for path in listdir(logdir) if is_log_file(path, join(logdir, path))]
-	if (len(logfiles) == 0):
+	if (not logfiles):
 		logging.error("Didn't found any log in %s", logdir)
 		raise Exception("Didn't found any log in %s" % logdir)
 	logfiles = sorted(logfiles, reverse = True)
