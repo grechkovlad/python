@@ -3,7 +3,7 @@
 from os import listdir, makedirs
 from os.path import isfile, join, exists, getmtime, split
 import gzip
-from getopt import getopt
+import argparse
 import shlex
 import sys
 import errno
@@ -196,19 +196,24 @@ def init_config_from_file(config_file_path):
 			set_config_value(line)
 		
 def init_config(cmd_args):
-	config_file = './log_analyzer.conf'
-	try:
-		options, arguments = getopt(cmd_args, '', ['config=', 'log-level='])
-	except:
-		raise ConfigInitException('Only --config and --log-level options supported')
-	for key, value in options:
-		if (key == '--config'):
-			config_file = value
-		if (key == '--log-level'):
-			config['LOG_LEVEL'] = getattr(logging, value, logging.ERROR)
-	if (not isfile(config_file)):
-		raise ConfigInitException('File not found: %s' % config_file)
-	return init_config_from_file(config_file)
+	parser = argparse.ArgumentParser(description = 'Analyzes logs')
+	parser.add_argument(
+					'--config',
+					nargs = '?',
+					help = 'Path to config file',
+					dest = 'conf',
+					default = './log_analyzer.conf')
+	parser.add_argument(
+					'--log-level',
+					nargs = '?',
+					help = 'Logging level',
+					dest = 'loglevel',
+					default = 'ERROR')
+	parsed_args = parser.parse_args(cmd_args)
+	if (not isfile(parsed_args.conf)):
+		raise ConfigInitException('File not found: %s' % parsed_args.conf)
+	config['LOG_LEVEL'] = getattr(logging, parsed_args.loglevel)
+	return init_config_from_file(parsed_args.conf)
 
 def set_up_logger():
 	logging.basicConfig(
