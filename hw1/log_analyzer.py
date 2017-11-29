@@ -8,6 +8,7 @@ import shlex
 import sys
 import errno
 import logging
+from collections import namedtuple
 
 config = {
     "REPORT_SIZE": 1000,
@@ -20,6 +21,8 @@ config = {
 
 LOG_NAME_PREFIX = 'nginx-access-ui.log-'
 
+LogInfo = namedtuple('LogInfo', ['path', 'date'])
+
 class ConfigInitException(Exception):
 	def __init__(self,*args,**kwargs):
 		Exception.__init__(self, *args, **kwargs)
@@ -27,7 +30,7 @@ class ConfigInitException(Exception):
 def is_log_file(rel_path, abs_path):
     return str(rel_path).startswith(LOG_NAME_PREFIX) and isfile(abs_path)
 
-def get_latest_log(logdir):
+def get_latest_log_info(logdir):
 	logfiles = [(path, join(logdir, path)) for path in listdir(logdir) if is_log_file(path, join(logdir, path))]
 	if (not logfiles):
 		logging.error("Didn't found any log in %s", logdir)
@@ -39,7 +42,7 @@ def get_latest_log(logdir):
 	log_date = logfiles[0][0][len(LOG_NAME_PREFIX):len(LOG_NAME_PREFIX) + 8]
 	log_date = log_date[:4] + '.' + log_date[4:6] + '.' + log_date[6:]
 	logging.info('Analyzing %s log file', logfiles[0][1])
-	return logfiles[0][1], log_date
+	return LogInfo(logfiles[0][1], log_date)
 
 def get_url(query):
     return query.split(' ')[1]
@@ -152,11 +155,12 @@ def write_report(report_dir, report, log_date):
 		report_path = get_report_path(report_dir, log_date)
 		with open(report_path, 'w') as report_file:
 			report_file.write(report)
-		return getmtime(report_path)
 	except:
 		logging.exception('Error while writing report')
 		
-def write_ts(ts):
+def write_ts(report_dir, log_date):
+	report_path = get_report_path(report_dir, log_date)
+	ts = getmtime(report_path)
 	with open(config['TS_FILE'], 'w') as f:
 		f.write(str(ts))
 		
@@ -218,13 +222,14 @@ def set_up_logger():
 def main():
 	init_config(sys.argv[1:])
 	set_up_logger()
-	log_file, log_date = get_latest_log(config['LOG_DIR'])
-	if (job_is_done(config['REPORT_DIR'], log_date)):
+	latest_log_info = get_latest_log_info(config['LOG_DIR'])
+	if (job_is_done(config['REPORT_DIR'], latest_log_info.date)):
 		logging.info('Report have been already created')
 		return
-	table = calc_table(get_log_records(log_file), config['REPORT_SIZE'])
+	table = calc_table(get_log_records(latest_log_info.path), config['REPORT_SIZE'])
 	rep = render_template(get_template(), json_repr(table))
-	write_ts(write_report(config['REPORT_DIR'], rep, log_date))
+	write_report(config['REPORT_DIR'], rep, latest_log_info.date)
+	write_ts(config['REPORT_DIR'], latest_log_info.date)
 
 if __name__ == "__main__":
 	main()
