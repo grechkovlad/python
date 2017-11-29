@@ -57,7 +57,6 @@ def get_log_records(log_file):
 	for line in open_log_file(log_file):
 		try:
 			if (not isinstance(line, str)):
-				print('NOT')
 				line = line.decode('utf-8')
 			yield parse_log_line(line)
 		except Exception as e:
