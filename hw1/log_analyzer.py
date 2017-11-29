@@ -217,7 +217,7 @@ def main():
 	log_file, log_date = get_latest_log(config['LOG_DIR'])
 	if (job_is_done(config['REPORT_DIR'], log_date)):
 		logging.info('Report have been already created')
-		return 0
+		return
 	table = calc_table(get_log_records(log_file), config['REPORT_SIZE'])
 	rep = render_template(get_template(), json_repr(table))
 	write_ts(write_report(config['REPORT_DIR'], rep, log_date))
