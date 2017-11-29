@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import listdir, makedirs
-from os.path import isfile, join, exists, getmtime
+from os.path import isfile, join, exists, getmtime, split
 import gzip
 from getopt import getopt
 import shlex
@@ -9,6 +9,7 @@ import sys
 import errno
 import logging
 from collections import namedtuple
+import datetime
 
 config = {
     "REPORT_SIZE": 1000,
@@ -27,22 +28,35 @@ class ConfigInitException(Exception):
 	def __init__(self,*args,**kwargs):
 		Exception.__init__(self, *args, **kwargs)
 		
-def is_log_file(rel_path, abs_path):
-    return str(rel_path).startswith(LOG_NAME_PREFIX) and isfile(abs_path)
-
+def is_log_file(path):
+	file_name = split(path)[1]
+	if (not file_name.startswith(LOG_NAME_PREFIX)):
+		return False
+	date = file_name[len(LOG_NAME_PREFIX):]
+	if (date.endswith('.gz')):
+		date = date[:len('.gz')]
+	try:
+		datetime.datetime.strptime(date, '%Y%m%d')
+	except:
+		return False
+	return True
+		
+def get_log_info(path):
+	file_name = split(path)[1]
+	date = file_name[len(LOG_NAME_PREFIX):]
+	if (date.endswith('.gz')):
+		date = date[:len('.gz')]
+	date_formatted = datetime.datetime.strptime(date, '%Y%m%d').strftime('%Y.%m.%d')
+	return LogInfo(path, date_formatted)
+		
 def get_latest_log_info(logdir):
-	logfiles = [(path, join(logdir, path)) for path in listdir(logdir) if is_log_file(path, join(logdir, path))]
+	logfiles = [get_log_info(join(logdir, path)) for path in listdir(logdir) if is_log_file(join(logdir, path))]
 	if (not logfiles):
 		logging.error("Didn't found any log in %s", logdir)
 		raise Exception("Didn't found any log in %s" % logdir)
-	logfiles = sorted(logfiles, reverse = True)
-	if (len(logfiles[0][0]) != len(LOG_NAME_PREFIX) + 8):
-		logging.error('Incorrect date format: %s', logfiles[0][0])
-		raise Exception('Incorrect date format: %s' % logfiles[0][0])
-	log_date = logfiles[0][0][len(LOG_NAME_PREFIX):len(LOG_NAME_PREFIX) + 8]
-	log_date = log_date[:4] + '.' + log_date[4:6] + '.' + log_date[6:]
-	logging.info('Analyzing %s log file', logfiles[0][1])
-	return LogInfo(logfiles[0][1], log_date)
+	logfiles = sorted(logfiles, reverse = True, key = lambda log_info : log_info.date)
+	logging.info('Analyzing %s log file', logfiles[0].path)
+	return logfiles[0]
 
 def get_url(query):
     return query.split(' ')[1]
