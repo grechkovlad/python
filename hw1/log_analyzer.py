@@ -208,7 +208,12 @@ def init_config(cmd_args):
 	return init_config_from_file(config_file)
 
 def set_up_logger():
-	logging.basicConfig(format = '[%(asctime)s] %(levelname).1s %(message)s', filename = config['LOG_FILE'], level = config['LOG_LEVEL'], datefmt='%Y.%m.%d %H:%M:%S')
+	logging.basicConfig(
+		format = '[%(asctime)s] %(levelname).1s %(message)s',
+		filename = config['LOG_FILE'],
+		level = config['LOG_LEVEL'],
+		datefmt='%Y.%m.%d %H:%M:%S'
+	)
 
 def main():
 	init_config(sys.argv[1:])
