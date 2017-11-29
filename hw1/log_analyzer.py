@@ -202,13 +202,15 @@ def init_config(cmd_args):
 					nargs = '?',
 					help = 'Path to config file',
 					dest = 'conf',
-					default = './log_analyzer.conf')
+					default = './log_analyzer.conf'
+				)
 	parser.add_argument(
 					'--log-level',
 					nargs = '?',
 					help = 'Logging level',
 					dest = 'loglevel',
-					default = 'ERROR')
+					default = 'ERROR'
+				)
 	parsed_args = parser.parse_args(cmd_args)
 	if (not isfile(parsed_args.conf)):
 		raise ConfigInitException('File not found: %s' % parsed_args.conf)
