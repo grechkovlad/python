@@ -54,13 +54,14 @@ def parse_log_line(line):
     return get_url(tokens[4]), float(tokens[12])
 
 def get_log_records(log_file):
-    for line in open_log_file(log_file):
-        try:
-            if (not (type(line) is str)):
-                line = line.decode('utf-8')
-            yield parse_log_line(line)
-        except:
-            logging.info('Unknown format in log file: %s', line)
+	for line in open_log_file(log_file):
+		try:
+			if (not isinstance(line, str)):
+				print('NOT')
+				line = line.decode('utf-8')
+			yield parse_log_line(line)
+		except Exception as e:
+			logging.info('Unknown format in log file: %s', line)
 			
 def median(sorted_values):
     arr_len = len(sorted_values)
