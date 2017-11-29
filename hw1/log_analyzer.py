@@ -147,7 +147,7 @@ def write_report(report_dir, report, log_date):
 	try:
 		makedirs(report_dir)
 	except OSError as e:
-		if e.errno != errno.EEXIST:
+		if (not exists(report_dir)):
 			logging.exception('Error while creating directory for report: %s', report_dir)
 	try:
 		report_path = get_report_path(report_dir, log_date)
