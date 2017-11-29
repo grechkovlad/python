@@ -1,5 +1,4 @@
 REPORT_SIZE: 100
 REPORT_DIR: "./reports/"
-LOG_DIR: "./log"
-LOG_FILE: "./analyzer-log.log"
+LOG_DIR: "D:/PythonCourse/01/log"
 TS_FILE: "./timestamp.ts"
