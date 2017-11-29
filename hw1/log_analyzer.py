@@ -41,11 +41,6 @@ def get_latest_log(logdir):
 	logging.info('Analyzing %s log file', logfiles[0][1])
 	return logfiles[0][1], log_date
 
-def open_log_file(log_file):
-    if (log_file.endswith('.gz')):
-        return gzip.open(log_file, 'r')
-    return open(log_file, 'r')
-	
 def get_url(query):
     return query.split(' ')[1]
 
@@ -54,7 +49,11 @@ def parse_log_line(line):
     return get_url(tokens[4]), float(tokens[12])
 
 def get_log_records(log_file):
-	for line in open_log_file(log_file):
+	if (log_file.endswith('.gz')):
+		opened_log = gzip.open(log_file, 'r')
+	else:
+		opened_log = open(log_file, 'r')
+	for line in opened_log:
 		try:
 			if (not isinstance(line, str)):
 				line = line.decode('utf-8')
