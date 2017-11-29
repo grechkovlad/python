@@ -231,4 +231,7 @@ def main():
 	write_ts(config['REPORT_DIR'], latest_log_info.date)
 
 if __name__ == "__main__":
-	main()
+	try:
+		main()
+	except:
+		logging.exception("Unhandled exception occured")
